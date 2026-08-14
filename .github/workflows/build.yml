@@ -1,0 +1,43 @@
+name: Build HSQ128R CONTROL APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Unzip project
+        run: |
+          mkdir project
+          unzip -q HSQ128R_CONTROL_project_upload.zip -d project
+
+      - name: Configure AndroidX
+        run: |
+          echo "android.useAndroidX=true" >> project/gradle.properties
+          echo "android.enableJetifier=true" >> project/gradle.properties
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: '8.7'
+
+      - name: Build APK
+        working-directory: project
+        run: gradle :app:assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: HSQ128R-CONTROL-APK
+          path: project/app/build/outputs/apk/debug/*.apk
